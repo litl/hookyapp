@@ -1,0 +1,37 @@
+bind_address = "0.0.0.0"
+bind_port = 4242
+
+[apps]
+    [apps.MyFirstApp]
+    name = "My First App"
+    hockeyapp_id = "deadbeefdeadbeefdeadbeefdeadbeef"
+    hockeyapp_api_token = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
+    [apps.MyFirstApp.crash_handlers]
+
+        [apps.MyFirstApp.crash_handlers.fogbugz]
+        type = "fogbugz"
+
+        [apps.MyFirstApp.crash_handlers.fogbugz.config]
+        host = "mycompany.fogbugz.com"
+        email = "me@mycompany.com"
+        password = "p@ssword"
+        project = "MyFirstApp"
+        area = "CrashReports"
+
+    [apps.MySecondApp]
+    name = "My Second App"
+    hockeyapp_id = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    hockeyapp_api_token = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
+    [apps.MySecondApp.crash_handlers]
+
+        [apps.MySecondApp.crash_handlers.fogbugz]
+        type = "fogbugz"
+
+        [apps.MySecondApp.crash_handlers.fogbugz.config]
+        host = "mycompany.fogbugz.com"
+        email = "me@mycompany.com"
+        password = "p@ssword"
+        project = "MySecondApp"
+        area = "CrashReports"
