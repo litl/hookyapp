@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -12,6 +13,7 @@ type HookyAppHandler struct {
 	bindAddress string
 	bindPort    int
 	apps        map[string]*App
+	debug       bool
 }
 
 type CrashHandler interface {
@@ -32,6 +34,10 @@ func (handler *HookyAppHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 	if bytes, err = ioutil.ReadAll(r.Body); err != nil {
 		fmt.Println("Failed to read request body", err)
 		return
+	}
+
+	if handler.debug {
+		log.Println("Received notification", string(bytes))
 	}
 
 	var notification HockeyNotification
@@ -66,9 +72,15 @@ func (handler *HookyAppHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 }
 
 func main() {
-	var err error
-	var handler *HookyAppHandler
-	if handler, err = ParseConfig("hookyapp.toml"); err != nil {
+	handler := new(HookyAppHandler)
+	flag.BoolVar(&handler.debug, "debug", false, "Run in debug mode")
+	flag.Parse()
+
+	if handler.debug {
+		log.Println("Debug mode enabled")
+	}
+
+	if err := handler.ParseConfig("hookyapp.toml"); err != nil {
 		log.Fatalln("Failed to initialize from config", err)
 		return
 	}

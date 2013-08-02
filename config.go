@@ -46,21 +46,25 @@ func (appConfig *appConfig) buildApp() (*App, error) {
 	return &App{appConfig.Name, appConfig.HockeyAppId, appConfig.HockeyApiToken, crashHandlers}, nil
 }
 
-func ParseConfig(configFile string) (*HookyAppHandler, error) {
+func (handler *HookyAppHandler) ParseConfig(configFile string) error {
 	var config config
 	if _, err := toml.DecodeFile(configFile, &config); err != nil {
-		return nil, err
+		return err
 	}
 
 	apps := make(map[string]*App)
 	for _, appConfig := range config.AppConfigs {
 		app, err := appConfig.buildApp()
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		apps[appConfig.HockeyAppId] = app
 	}
 
-	return &HookyAppHandler{config.BindAddress, config.BindPort, apps}, nil
+	handler.bindAddress = config.BindAddress
+	handler.bindPort = config.BindPort
+	handler.apps = apps
+
+	return nil
 }
