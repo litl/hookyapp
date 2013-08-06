@@ -2,10 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -63,7 +65,7 @@ type HockeyCrash struct {
 const HOST = "rink.hockeyapp.net"
 const API_BASE = "/api/2"
 
-func (app *App) apiCall(call string, args *url.Values) (*http.Response, error) {
+func (app *App) apiGetCall(call string, args *url.Values) (*http.Response, error) {
 	client := &http.Client{}
 
 	path := fmt.Sprintf("%s/apps/%s%s", API_BASE, app.hockeyAppId, call)
@@ -79,12 +81,47 @@ func (app *App) apiCall(call string, args *url.Values) (*http.Response, error) {
 	return client.Do(req)
 }
 
+func (app *App) apiPostCall(call string, formArgs *url.Values) (*http.Response, error) {
+	client := &http.Client{}
+
+	path := fmt.Sprintf("%s/apps/%s%s", API_BASE, app.hockeyAppId, call)
+	url := &url.URL{"https", "", nil, HOST, path, "", ""}
+
+	req, err := http.NewRequest("POST", url.String(), strings.NewReader(formArgs.Encode()))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("X-HockeyAppToken", app.hockeyApiToken)
+
+	return client.Do(req)
+}
+
+func (app *App) SetBugTrackerUrl(reason HockeyCrashReason, trackerUrl string) error {
+	var err error
+	call := fmt.Sprintf("/crash_reasons/%d", reason.Id)
+
+	args := &url.Values{}
+	args.Set("ticket_url", trackerUrl)
+
+	var resp *http.Response
+	if resp, err = app.apiPostCall(call, args); err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return errors.New(fmt.Sprintf("HockeyApp error: %s", resp.Status))
+	}
+
+	return nil
+}
+
 func (app *App) GetCrashes(reason HockeyCrashReason) ([]HockeyCrash, error) {
 	var err error
 	call := fmt.Sprintf("/crash_reasons/%d", reason.Id)
 
 	var resp *http.Response
-	if resp, err = app.apiCall(call, &url.Values{}); err != nil {
+	if resp, err = app.apiGetCall(call, &url.Values{}); err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -113,7 +150,7 @@ func (app *App) GetCrashLog(crash HockeyCrash) (string, error) {
 
 	var err error
 	var resp *http.Response
-	if resp, err = app.apiCall(call, args); err != nil {
+	if resp, err = app.apiGetCall(call, args); err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()

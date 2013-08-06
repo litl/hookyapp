@@ -24,7 +24,12 @@ type errorCodeTag struct {
 	ErrorDesc string `xml:",chardata"`
 }
 
-func (session *Session) FileBug(project string, area string, title string, content string) error {
+type caseTag struct {
+	BugNumber  string `xml:"ixBug,attr"`
+	Operations string
+}
+
+func (session *Session) FileBug(project string, area string, title string, content string) (string, error) {
 	values := url.Values{}
 	values.Set("cmd", "new")
 	values.Set("token", session.token)
@@ -36,12 +41,13 @@ func (session *Session) FileBug(project string, area string, title string, conte
 
 	resp, err := http.Get(url.String())
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer resp.Body.Close()
 
 	type Response struct {
 		XMLName xml.Name     `xml:"response"`
+		Case    caseTag      `xml:"case"`
 		Error   errorCodeTag `xml:"error"`
 	}
 
@@ -49,14 +55,14 @@ func (session *Session) FileBug(project string, area string, title string, conte
 	dec := xml.NewDecoder(resp.Body)
 	err = dec.Decode(&r)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if r.Error.ErrorCode != 0 {
-		return errors.New(fmt.Sprintf("Fogbugz error %d: %s", r.Error.ErrorCode, r.Error.ErrorDesc))
+		return "", errors.New(fmt.Sprintf("Fogbugz error %d: %s", r.Error.ErrorCode, r.Error.ErrorDesc))
 	}
 
-	return nil
+	return fmt.Sprintf("https://%s/default.asp?%s", session.host, r.Case.BugNumber), nil
 }
 
 func fecthAuthToken(config Config) (string, error) {

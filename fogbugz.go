@@ -77,5 +77,15 @@ func (handler FogbugzCrashHandler) HandleCrash(app *App, notification HockeyNoti
 
 	content := fmt.Sprintf(CONTENT_PATTERN, notification.Url,
 		crash.UserString, crashLog)
-	return handler.session.FileBug(handler.project, handler.area, title, content)
+
+	var trackerUrl string
+	if trackerUrl, err = handler.session.FileBug(handler.project, handler.area, title, content); err != nil {
+		return err
+	}
+
+	if err = app.SetBugTrackerUrl(notification.CrashReason, trackerUrl); err != nil {
+		return err
+	}
+
+	return nil
 }
