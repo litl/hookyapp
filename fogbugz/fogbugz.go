@@ -37,13 +37,18 @@ func (session *Session) FileBug(project string, area string, title string, conte
 	values.Set("sArea", area)
 	values.Set("sTitle", title)
 	values.Set("sEvent", content)
-	url := &url.URL{"https", "", nil, session.host, "/api.asp", values.Encode(), ""}
+	url := &url.URL{"https", "", nil, session.host, "/api.asp", "", ""}
 
-	resp, err := http.Get(url.String())
+	resp, err := http.PostForm(url.String(), values)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		err = errors.New(fmt.Sprintf("Failed to create bug report: %s", resp.Status))
+		return "", err
+	}
 
 	type Response struct {
 		XMLName xml.Name     `xml:"response"`
