@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -15,6 +16,7 @@ type HockeyNotificationType string
 
 const (
 	HOCKEY_NOTIFICATION_CRASH_REASON HockeyNotificationType = "crash_reason"
+	HOCKEY_NOTIFICATION_APP_VERSION  HockeyNotificationType = "app_version"
 )
 
 type HockeyNotification struct {
@@ -23,6 +25,7 @@ type HockeyNotification struct {
 	SentAt           time.Time              `json:"sent_at"`
 	Url              string                 `json:"url"`
 	CrashReason      HockeyCrashReason      `json:"crash_reason"`
+	AppVersion       HockeyAppVersion       `json:"app_version"`
 }
 
 type HockeyCrashReason struct {
@@ -60,6 +63,23 @@ type HockeyCrash struct {
 	Oem                string    `json:"oem"`
 	OsVersion          string    `json:"os_version"`
 	UserString         string    `json:"user_string"`
+}
+
+type HockeyAppVersion struct {
+	Version          string        `json:"version"`
+	ShortVersion     string        `json:"short_version"`
+	Title            string        `json:"title"`
+	Timestamp        int           `json:"timestamp"`
+	AppSize          int           `json:"appsize"`
+	Notes            template.HTML `json:"notes"`
+	Mandatory        bool          `json:"mandatory"`
+	MinimumOsVersion string        `json:"minimum_os_version"`
+	DeviceFamily     *string       `json:"device_family"`
+	Id               int           `json:"id"`
+	AppId            int           `json:"app_id"`
+	RestrictedToTags bool          `json:"restricted_to_tags"`
+	Status           int           `json:"status"`
+	Tags             *string       `json:"tags"`
 }
 
 const HOST = "rink.hockeyapp.net"

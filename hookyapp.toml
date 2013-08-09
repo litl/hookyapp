@@ -35,3 +35,18 @@ bind_port = 4242
         password = "p@ssword"
         project = "MySecondApp"
         area = "CrashReports"
+
+    [apps.MySecondApp.release_handlers]
+
+        [apps.MySecondApp.release_handlers.email_mymailinglist]
+        type = "email"
+
+        [apps.MySecondApp.release_handlers.email_mymailinglist.config]
+        smtp_server = "smtp.gmail.com"
+        smtp_port = 587
+        smtp_username = "no-reply@mycompany.com"
+        smtp_password = "p@ssw0rd"
+
+        from = "Hooky App <no-reply@mycompany.com>"
+        to = "Mailing List <mymailinglist@mycompany.com>"
+        template = "email_template.html"

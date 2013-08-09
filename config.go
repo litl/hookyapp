@@ -10,6 +10,12 @@ const (
 	FOGBUGZ CrashHandlerType = "fogbugz"
 )
 
+type ReleaseHandlerType string
+
+const (
+	EMAIL ReleaseHandlerType = "email"
+)
+
 type config struct {
 	BindAddress string               `toml:"bind_address"`
 	BindPort    int                  `toml:"bind_port"`
@@ -17,15 +23,21 @@ type config struct {
 }
 
 type appConfig struct {
-	Name                string                        `toml:"name"`
-	HockeyAppId         string                        `toml:"hockeyapp_id"`
-	HockeyApiToken      string                        `toml:"hockeyapp_api_token"`
-	CrashHandlerConfigs map[string]crashHandlerConfig `toml:"crash_handlers"`
+	Name                  string                          `toml:"name"`
+	HockeyAppId           string                          `toml:"hockeyapp_id"`
+	HockeyApiToken        string                          `toml:"hockeyapp_api_token"`
+	CrashHandlerConfigs   map[string]crashHandlerConfig   `toml:"crash_handlers"`
+	ReleaseHandlerConfigs map[string]releaseHandlerConfig `toml:"release_handlers"`
 }
 
 type crashHandlerConfig struct {
 	HandlerType   CrashHandlerType `toml:"type"`
 	HandlerConfig toml.Primitive   `toml:"config"`
+}
+
+type releaseHandlerConfig struct {
+	HandlerType   ReleaseHandlerType `toml:"type"`
+	HandlerConfig toml.Primitive     `toml:"config"`
 }
 
 func (appConfig *appConfig) buildApp() (*App, error) {
@@ -43,7 +55,21 @@ func (appConfig *appConfig) buildApp() (*App, error) {
 		}
 	}
 
-	return &App{appConfig.Name, appConfig.HockeyAppId, appConfig.HockeyApiToken, crashHandlers}, nil
+	releaseHandlers := make([]NotificationHandler, 0)
+
+	for _, releaseHandlerConfig := range appConfig.ReleaseHandlerConfigs {
+		switch releaseHandlerConfig.HandlerType {
+		case EMAIL:
+			releaseHandler, err := NewEmailReleaseHandler(releaseHandlerConfig.HandlerConfig)
+			if err != nil {
+				return nil, err
+			}
+
+			releaseHandlers = append(releaseHandlers, releaseHandler)
+		}
+	}
+
+	return &App{appConfig.Name, appConfig.HockeyAppId, appConfig.HockeyApiToken, crashHandlers, releaseHandlers}, nil
 }
 
 func (handler *HookyAppHandler) ParseConfig(configFile string) error {

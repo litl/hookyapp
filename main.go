@@ -21,10 +21,11 @@ type NotificationHandler interface {
 }
 
 type App struct {
-	name           string
-	hockeyAppId    string
-	hockeyApiToken string
-	crashHandlers  []NotificationHandler
+	name            string
+	hockeyAppId     string
+	hockeyApiToken  string
+	crashHandlers   []NotificationHandler
+	releaseHandlers []NotificationHandler
 }
 
 func (handler *HookyAppHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +53,8 @@ func (handler *HookyAppHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if notification.Type == HOCKEY_NOTIFICATION_CRASH_REASON {
+	switch notification.Type {
+	case HOCKEY_NOTIFICATION_CRASH_REASON:
 		crashes, err := app.GetCrashes(notification.CrashReason)
 		if err != nil {
 			log.Println("Failed to fetch crashes for crash reason", err)
@@ -68,6 +70,17 @@ func (handler *HookyAppHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 				log.Println("Successfully handled crash reason")
 			}
 		}
+		break
+
+	case HOCKEY_NOTIFICATION_APP_VERSION:
+		for _, handler := range app.releaseHandlers {
+			if err = handler.Handle(app, notification); err != nil {
+				log.Println("Error when handling release", err)
+			} else {
+				log.Println("Successfully handled release")
+			}
+		}
+		break
 	}
 }
 
