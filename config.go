@@ -29,7 +29,7 @@ type crashHandlerConfig struct {
 }
 
 func (appConfig *appConfig) buildApp() (*App, error) {
-	crashHandlers := make([]CrashHandler, 0)
+	crashHandlers := make([]NotificationHandler, 0)
 
 	for _, crashHandlerConfig := range appConfig.CrashHandlerConfigs {
 		switch crashHandlerConfig.HandlerType {

@@ -55,7 +55,7 @@ User: %s
 %s
 `
 
-func (handler FogbugzCrashHandler) HandleCrash(app *App, notification HockeyNotification) error {
+func (handler FogbugzCrashHandler) Handle(app *App, notification HockeyNotification) error {
 	title := fmt.Sprintf("Crash at %s:%s - %s - %s", notification.CrashReason.File,
 		notification.CrashReason.Line, notification.CrashReason.Method,
 		notification.CrashReason.Reason)

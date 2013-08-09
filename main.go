@@ -16,15 +16,15 @@ type HookyAppHandler struct {
 	debug       bool
 }
 
-type CrashHandler interface {
-	HandleCrash(app *App, notification HockeyNotification) error
+type NotificationHandler interface {
+	Handle(app *App, notification HockeyNotification) error
 }
 
 type App struct {
 	name           string
 	hockeyAppId    string
 	hockeyApiToken string
-	crashHandlers  []CrashHandler
+	crashHandlers  []NotificationHandler
 }
 
 func (handler *HookyAppHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +62,7 @@ func (handler *HookyAppHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		notification.CrashReason.Crashes = crashes
 
 		for _, handler := range app.crashHandlers {
-			if err = handler.HandleCrash(app, notification); err != nil {
+			if err = handler.Handle(app, notification); err != nil {
 				log.Println("Error when handling crash", err)
 			} else {
 				log.Println("Successfully handled crash reason")
