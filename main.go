@@ -85,15 +85,17 @@ func (handler *HookyAppHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 }
 
 func main() {
+	var configFile string
 	handler := new(HookyAppHandler)
 	flag.BoolVar(&handler.debug, "debug", false, "Run in debug mode")
+	flag.StringVar(&configFile, "config", "hookyapp.toml", "Path to configuration file")
 	flag.Parse()
 
 	if handler.debug {
 		log.Println("Debug mode enabled")
 	}
 
-	if err := handler.ParseConfig("hookyapp.toml"); err != nil {
+	if err := handler.ParseConfig(configFile); err != nil {
 		log.Fatalln("Failed to initialize from config", err)
 		return
 	}
