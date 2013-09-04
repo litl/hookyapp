@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 )
 
 type HookyAppHandler struct {
@@ -98,6 +100,13 @@ func main() {
 	if err := handler.ParseConfig(configFile); err != nil {
 		log.Fatalln("Failed to initialize from config", err)
 		return
+	}
+
+	portEnv := os.Getenv("PORT")
+	if portEnv != "" {
+		if port, err := strconv.Atoi(portEnv); err == nil {
+			handler.bindPort = port
+		}
 	}
 
 	http.Handle("/hockeyapp_webhook", handler)
