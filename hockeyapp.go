@@ -67,7 +67,7 @@ type HockeyCrash struct {
 
 type HockeyAppVersion struct {
 	Version          string        `json:"version"`
-	ShortVersion     string        `json:"short_version"`
+	ShortVersion     string        `json:"shortversion"`
 	Title            string        `json:"title"`
 	Timestamp        int           `json:"timestamp"`
 	AppSize          int           `json:"appsize"`
