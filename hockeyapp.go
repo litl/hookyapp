@@ -79,7 +79,7 @@ type HockeyAppVersion struct {
 	AppId            int           `json:"app_id"`
 	RestrictedToTags bool          `json:"restricted_to_tags"`
 	Status           int           `json:"status"`
-	Tags             *string       `json:"tags"`
+	Tags             *[]string     `json:"tags"`
 }
 
 const HOST = "rink.hockeyapp.net"
